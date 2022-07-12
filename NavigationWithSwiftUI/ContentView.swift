@@ -10,12 +10,17 @@ import Combine
 
 struct ContentView: View {
     @ObservedObject var pageTwoViewModel: PageTwoViewModel
+    @ObservedObject var pageOneViewModel: PageOneViewModel
+    @ObservedObject var tabViewModel: MainTabViewModel
     
     var body: some View {
-        TabView {
-            PageOne()
+        TabView(selection: $tabViewModel.selectedTab) {
+            PageOne(viewModel: pageOneViewModel)
+                .tag(MainTabViewModel.Tab.pageOne)
             PageTwo(pageTwoViewModel: pageTwoViewModel)
+                .tag(MainTabViewModel.Tab.pageTwo)
         }
+        
     }
 }
 
@@ -23,31 +28,50 @@ struct ContentView: View {
 
 class MainFlow {
     @Published var pageTwoVM: PageTwoViewModel
+    @Published var pageOneVM: PageOneViewModel
+    @Published var mainTabModel: MainTabViewModel
     
-    init(pageTwoViewModel: PageTwoViewModel) {
+    var observers: [AnyCancellable] = []
+    
+    init(pageTwoViewModel: PageTwoViewModel, pageOneVM: PageOneViewModel, mainTabModel: MainTabViewModel) {
         self.pageTwoVM = pageTwoViewModel
+        self.pageOneVM = pageOneVM
+        self.mainTabModel = mainTabModel
         
+        pageTwoVM.submitViewModel.$isSuccess.removeDuplicates().sink { [weak self ] b in
+            print(b)
+            self?.pageTwoVM.isSubmitCodePresented = false
+        }
+        .store(in: &observers)
+        
+        pageOneVM.$isPresentingDetails.removeDuplicates().sink { isPresenting in
+            print("is presenting \(isPresenting)")
+        }
+        .store(in: &observers)
+        
+        pageOneVM.$shouldPop.sink { pop in
+            if pop {
+                pageOneVM.isPresentingDetails = false
+                
+            }
+        }
+        .store(in: &observers)
         
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(pageTwoViewModel: PageTwoViewModel(submitViewModel: SubmitCodeViewModel()))
+        ContentView(pageTwoViewModel: PageTwoViewModel(submitViewModel: SubmitCodeViewModel()), pageOneViewModel: PageOneViewModel(), tabViewModel: MainTabViewModel())
     }
 }
 
-struct PageOne: View {
-    var body: some View {
-        VStack {
-            Text("Hello there")
-                .font(.body)
-                
-        }
-        .navigationTitle("Page One")
-    }
-    
+class PageOneViewModel: ObservableObject {
+    @Published var isPresentingDetails: Bool = false
+    @Published var shouldPop: Bool = false
 }
+
+
 
 class SubmitCodeViewModel: ObservableObject {
     @Published var isSuccess: Bool = false
@@ -62,57 +86,14 @@ class SubmitCodeViewModel: ObservableObject {
     }
 }
 
-struct SubmitCodeView: View {
-    @ObservedObject var viewModel: SubmitCodeViewModel
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            TextField("Enter Code", text: $viewModel.textFieldValue)
-            
-            Button {
-                viewModel.submit()
-                
-            } label: {
-                Text("Submit")
-            }
-
-        }
-    }
-}
-
 
 class PageTwoViewModel: ObservableObject {
     @Published var submitViewModel: SubmitCodeViewModel
+    @Published var isSubmitCodePresented = false
     
     init(submitViewModel: SubmitCodeViewModel) {
         self.submitViewModel = submitViewModel
     }
 }
 
-struct PageTwo: View {
-    @State var codeSubmitShown = false
-    @ObservedObject var pageTwoViewModel: PageTwoViewModel
-    
-    var body: some View {
-        VStack {
-            Text("Hello there, It's me")
-                .font(.body)
-            
-            Button {
-                codeSubmitShown = true
-            } label: {
-                Text("Register")
-            }
-            .sheet(isPresented: $codeSubmitShown, onDismiss: {
-                
-            }, content: {
-                SubmitCodeView(viewModel: pageTwoViewModel.submitViewModel)
-            })
-
-                
-        }
-        .navigationTitle("Page Two")
-    }
-    
-}
 
