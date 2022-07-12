@@ -7,6 +7,17 @@
 
 import SwiftUI
 
+
+class PageTwoViewModel: ObservableObject {
+    @Published var submitViewModel: SubmitCodeViewModel
+    @Published var isSubmitCodePresented = false
+    
+    init(submitViewModel: SubmitCodeViewModel) {
+        self.submitViewModel = submitViewModel
+    }
+}
+
+
 struct PageTwo: View {
     
     @ObservedObject var pageTwoViewModel: PageTwoViewModel

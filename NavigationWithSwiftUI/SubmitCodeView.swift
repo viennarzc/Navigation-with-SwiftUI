@@ -11,14 +11,21 @@ struct SubmitCodeView: View {
     @ObservedObject var viewModel: SubmitCodeViewModel
     
     var body: some View {
-        VStack(spacing: 16) {
-            TextField("Enter Code", text: $viewModel.textFieldValue)
-            
-            Button {
-                viewModel.submit()
+        Form() {
+            Section {
                 
-            } label: {
-                Text("Submit")
+                
+                TextField("Enter Code", text: $viewModel.textFieldValue)
+                    .textFieldStyle(.plain)
+                
+                Button {
+                    viewModel.submit()
+                    
+                } label: {
+                    Text("Submit")
+                }
+            } footer: {
+                Text("Type AB for success")
             }
 
         }

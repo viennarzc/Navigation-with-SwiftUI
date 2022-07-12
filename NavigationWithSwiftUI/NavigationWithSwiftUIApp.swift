@@ -8,25 +8,6 @@
 import SwiftUI
 import Combine
 
-class MainTabViewModel: ObservableObject {
-    enum Tab: Int, Identifiable, CaseIterable {
-        var id: Int { rawValue }
-        
-        case pageOne
-        case pageTwo
-    }
-    
-    @Published var selectedTab: Tab = .pageOne
-    
-    @Published var pageTwoViewModel = PageTwoViewModel(submitViewModel: SubmitCodeViewModel())
-    @Published var pageOneViewModel = PageOneViewModel()
-
-    
-    init() {
-     
-    }
-}
-
 let mainTabViewModel = MainTabViewModel()
 
 @main

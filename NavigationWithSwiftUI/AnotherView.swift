@@ -11,7 +11,7 @@ struct AnotherView: View {
     var onTappedPop: () -> Void
     
     var body: some View {
-        VStack {
+        Form {
             Text("Lorem ipsum")
             
             Button {
